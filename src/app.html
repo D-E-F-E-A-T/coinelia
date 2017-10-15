@@ -1,4 +1,12 @@
 <template>
-  ${exchange}
-  <a href="${url}" target="tradingview">${pair}</a>
+  
+  <label for="inputApikey">key</label>
+  <input id="inputApikey"  type="password" value.two-way="apiKey">
+  
+  <label for="inputApiSecret">secret</label>
+  <input id="inputApiSecret" type="password" value.two-way="apiSecret">
+  
+  <br/>
+  
+  ${exchange} <a href="${url}" target="tradingview">${pair}</a>
 </template>

@@ -61,8 +61,6 @@ export class Coinigy
 
     let js:any = (await JSON.parse(j));
 
-    console.log(js);
-
     return Object.assign(new WatchItem(), js.data);
   }
 }
