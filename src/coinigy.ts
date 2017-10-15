@@ -1,7 +1,10 @@
-import {HttpClient, json} from 'aurelia-fetch-client'
+///<reference path="../node_modules/aurelia-fetch-client/dist/aurelia-fetch-client.d.ts"/>
 //import {HttpClient} from 'aurelia-http-client'
+import {HttpClient} from 'aurelia-fetch-client'
+import {QueryLogger} from "./QueryLogger";
+import {computedFrom} from 'aurelia-framework';
+import {observable} from 'aurelia-framework';
 
-// http://docs.coinigy.apiary.io/#reference/account-data/watch-list/userwatchlist
 // http://json2ts.com
 // TODO : use https://github.com/JohnWeisz/TypedJSON
 
@@ -9,7 +12,31 @@ export class Coinigy
 {
   protected httpClient = new HttpClient();
 
-  constructor(apiKey:string, apiSecret:string){
+  // http://docs.coinigy.apiary.io/#reference/market-data/list-exchanges/exchanges
+  public async getExchanges():Promise<Exchange[]>{
+    let jsonString = await (
+        await this.httpClient.fetch('exchanges', { method: 'post' })
+      )
+      .text();
+    
+    let js:any = (await JSON.parse(jsonString));
+
+    return Object.assign(new Exchange(), js.data);
+  }
+
+// http://docs.coinigy.apiary.io/#reference/account-data/watch-list/userwatchlist
+  public async getWatchList():Promise<Pair[]>{
+    let jsonString = await (
+        await this.httpClient.fetch('userWatchList', { method: 'post'})
+      )
+      .text();
+
+    let js:any = (await JSON.parse(jsonString));
+
+    return Object.assign([], js.data);
+  }
+
+  public activate(apiKey: string, apiSecret: string):void {
     this.httpClient.configure(config => {
       config
         .withBaseUrl('https://api.coinigy.com/api/v1/')
@@ -26,45 +53,11 @@ export class Coinigy
         })
         // https://stackoverflow.com/questions/13146892/cors-access-control-allow-headers-wildcard-being-ignored
         // had to install this for headers to show in req : https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi/related?hl=en-US        .withInterceptor({
-        .withInterceptor({
-          request(request) {
-            console.log(`Requesting ${request.method} ${request.url}`);
-            return request;
-          },
-          response(response) {
-            console.log(`Received ${response.status} ${response.url}`);
-            return response;
-          }
-        });
+        // (and this one for iframes https://chrome.google.com/webstore/detail/ignore-x-frame-headers/gleekbfjekiniecknbkamfmkohkpodhe/related )
+        .withInterceptor(new QueryLogger());
     });
   }
-
-  // http://docs.coinigy.apiary.io/#reference/market-data/list-exchanges/exchanges
-  async getExchanges():Promise<Exchange[]>{
-    let j = await (await this.httpClient
-      .fetch('exchanges', {
-        method: 'post',
-      }))
-      .text();
-    
-    let js:any = (await JSON.parse(j));
-
-    return Object.assign(new Exchange(), js.data);
-  }
-
-  async getWatchList():Promise<WatchItem[]>{
-    let j = await (await this.httpClient
-      .fetch('userWatchList', {
-        method: 'post',
-      }))
-      .text();
-
-    let js:any = (await JSON.parse(j));
-
-    return Object.assign(new WatchItem(), js.data);
-  }
 }
-
 
 export class Exchange
 {
@@ -77,19 +70,19 @@ export class Exchange
   exch_url:string;
 }
 
-export class WatchItem {
-  exchmkt_id: string;
+export class Pair {
+  exchmkt_id: number;
   mkt_name: string;
   exch_code: string;
   exch_name: string;
   primary_currency_name: string;
   secondary_currency_name: string;
-  server_time: string;
-  last_price: string;
-  prev_price: string;
-  high_trade: string;
-  low_trade: string;
-  current_volume: string;
-  fiat_market: string;
-  btc_volume: string;
+  //server_time: Date;
+  last_price: number;
+  prev_price: number;
+  high_trade: number;
+  low_trade: number;
+  current_volume: number;
+  fiat_market: boolean;
+  btc_volume: number;
 }

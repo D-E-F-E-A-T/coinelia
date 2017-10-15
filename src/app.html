@@ -1,12 +1,40 @@
 <template>
+  <div style="float: left;">
+    <!-- first select of the page doesn't respond to clicks somehow -->
+    <select></select>
+    
+    <select value.bind="selectedPair">
+      <option repeat.for="pair of pairs" model.bind="pair">
+        ${pair.mkt_name} - ${pair.exch_name}
+      </option>
+    </select>
   
-  <label for="inputApikey">key</label>
-  <input id="inputApikey"  type="password" value.two-way="apiKey">
-  
-  <label for="inputApiSecret">secret</label>
-  <input id="inputApiSecret" type="password" value.two-way="apiSecret">
-  
+    <a href.bind="coinigyUrl" target="tradingChart">coinigy</a>
+    <a href.bind="tradingChartUrl" target="tradingChart">tradingview</a>
+  </div>
+  <div style="float: right;">
+    <label for="inputApikey">key
+      <input id="inputApikey"  type="password" value.two-way="apiKey">
+    </label>
+    <label for="inputApiSecret">secret
+      <input id="inputApiSecret" type="password" value.two-way="apiSecret">
+    </label>
+  </div>
+
   <br/>
-  
-  ${exchange} <a href="${url}" target="tradingview">${pair}</a>
+
+  <div style="width: 100%; height: 95vh">
+    <div style="width: 70%; height: 100%; float: left;">
+      <object data.bind="tradingChartUrl" width="100%" height="100%" data.if="tradingChartUrl">
+        <embed src.bind="tradingChartUrl" width="100%" height="100%" src.if="tradingChartUrl"> </embed>
+        Error: Embedded data could not be displayed.
+      </object>
+    </div>
+    <div style="width: 30%; height: 100%; float: right;">
+      <object data.bind="tradingIdeasUrl" width="100%" height="100%" data.if="tradingIdeasUrl">
+        <embed src.bind="tradingIdeasUrl" width="100%" height="100%" src.if="tradingIdeasUrl"> </embed>
+        Error: Embedded data could not be displayed.
+      </object>
+    </div>
+  </div>
 </template>
