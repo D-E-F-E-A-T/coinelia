@@ -39,6 +39,8 @@
           "aurelia-bootstrapper",
           "aurelia-dependency-injection",
           "aurelia-event-aggregator",
+          "aurelia-fetch-client",
+          "aurelia-http-client",
           "aurelia-framework",
           "aurelia-history",
           "aurelia-history-browser",
