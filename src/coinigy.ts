@@ -1,34 +1,31 @@
 import {HttpClient, json} from 'aurelia-fetch-client'
 //import {HttpClient} from 'aurelia-http-client'
-//import 'whatwg-fetch';
+
+// http://docs.coinigy.apiary.io/#reference/account-data/watch-list/userwatchlist
+// http://json2ts.com
+// TODO : use https://github.com/JohnWeisz/TypedJSON
 
 export class Coinigy 
 {
   protected httpClient = new HttpClient();
 
-  private _apiKey: string;
-
-  private _apiSecret: string;
-
   constructor(apiKey:string, apiSecret:string){
-    this._apiKey = apiKey;
-    this._apiSecret = apiSecret;
-
     this.httpClient.configure(config => {
       config
-        //.useStandardConfiguration()
         .withBaseUrl('https://api.coinigy.com/api/v1/')
         .withDefaults({
           credentials: 'same-origin',
           headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-API-KEY' : this._apiKey,
-            'X-API-SECRET' : this._apiSecret,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-API-KEY' : apiKey,
+            'X-API-SECRET' : apiSecret,
             'X-Requested-With': 'Fetch',
-            //'Access-Control-Allow-Origin' : '*'
+            'Access-Control-Allow-Origin' : '*'
           },
         })
+        // https://stackoverflow.com/questions/13146892/cors-access-control-allow-headers-wildcard-being-ignored
+        // had to install this for headers to show in req : https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi/related?hl=en-US        .withInterceptor({
         .withInterceptor({
           request(request) {
             console.log(`Requesting ${request.method} ${request.url}`);
@@ -42,12 +39,59 @@ export class Coinigy
     });
   }
 
-  async getExchanges():Promise<string>{
-    return (await this.httpClient
-      .fetch('exchanges', { //userWatchList
+  // http://docs.coinigy.apiary.io/#reference/market-data/list-exchanges/exchanges
+  async getExchanges():Promise<Exchange[]>{
+    let j = await (await this.httpClient
+      .fetch('exchanges', {
         method: 'post',
-        mode: 'no-cors',
       }))
       .text();
+    
+    let js:any = (await JSON.parse(j));
+
+    return Object.assign(new Exchange(), js.data);
   }
+
+  async getWatchList():Promise<WatchItem[]>{
+    let j = await (await this.httpClient
+      .fetch('userWatchList', {
+        method: 'post',
+      }))
+      .text();
+
+    let js:any = (await JSON.parse(j));
+
+    console.log(js);
+
+    return Object.assign(new WatchItem(), js.data);
+  }
+}
+
+
+export class Exchange
+{
+  exch_id: number;
+  exch_name: string;
+  exch_code: string;
+  exch_fee: number;
+  exch_trade_enabled: boolean;
+  exch_balance_enabled: boolean;
+  exch_url:string;
+}
+
+export class WatchItem {
+  exchmkt_id: string;
+  mkt_name: string;
+  exch_code: string;
+  exch_name: string;
+  primary_currency_name: string;
+  secondary_currency_name: string;
+  server_time: string;
+  last_price: string;
+  prev_price: string;
+  high_trade: string;
+  low_trade: string;
+  current_volume: string;
+  fiat_market: string;
+  btc_volume: string;
 }
